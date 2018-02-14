@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TechJobsConsole
 {
@@ -32,19 +33,22 @@ namespace TechJobsConsole
 
                 if (actionChoice.Equals("list"))
                 {
+                    Console.Clear();
                     string columnChoice = GetUserSelection("List", columnChoices);
 
                     if (columnChoice.Equals("all"))
                     {
+                        Console.Clear();
                         PrintJobs(JobData.FindAll());
                     }
                     else
                     {
                         List<string> results = JobData.FindAll(columnChoice);
-
+                        Console.Clear();
+                        results.Sort();
                         Console.WriteLine("\n*** All " + columnChoices[columnChoice] + " Values ***");
                         foreach (string item in results)
-                        {
+                        { 
                             Console.WriteLine(item);
                         }
                     }
@@ -53,22 +57,32 @@ namespace TechJobsConsole
                 {
                     // How does the user want to search (e.g. by skill or employer)
                     string columnChoice = GetUserSelection("Search", columnChoices);
-
                     // What is their search term?
                     Console.WriteLine("\nSearch term: ");
                     string searchTerm = Console.ReadLine();
-
                     List<Dictionary<string, string>> searchResults;
-
                     // Fetch results
                     if (columnChoice.Equals("all"))
-                    {
-                        Console.WriteLine("Search all fields not yet implemented.");
+                    {  Console.Clear();
+
+                        searchResults = JobData.FindByValue(searchTerm);
+                        if (searchResults.Count == 0)
+                        {
+                            Console.WriteLine("\n No results were found for your search!");
+                        }
+                        else
+                           PrintJobs(searchResults);
+                        
                     }
                     else
-                    {
+                    {   
                         searchResults = JobData.FindByColumnAndValue(columnChoice, searchTerm);
-                        PrintJobs(searchResults);
+                        if (searchResults.Count == 0)
+                        {
+                            Console.WriteLine("\n No results were found for your search!");
+                        }
+                        else
+                            PrintJobs(searchResults);
                     }
                 }
             }
@@ -79,11 +93,12 @@ namespace TechJobsConsole
          */
         private static string GetUserSelection(string choiceHeader, Dictionary<string, string> choices)
         {
-            int choiceIdx;
+            int choiceIdx = -1, value, i=0;
             bool isValidChoice = false;
+            string input;
             string[] choiceKeys = new string[choices.Count];
 
-            int i = 0;
+         
             foreach (KeyValuePair<string, string> choice in choices)
             {
                 choiceKeys[i] = choice.Key;
@@ -98,18 +113,22 @@ namespace TechJobsConsole
                 {
                     Console.WriteLine(j + " - " + choices[choiceKeys[j]]);
                 }
-
-                string input = Console.ReadLine();
-                choiceIdx = int.Parse(input);
-
-                if (choiceIdx < 0 || choiceIdx >= choiceKeys.Length)
-                {
-                    Console.WriteLine("Invalid choices. Try again.");
-                }
+                input = Console.ReadLine();
+                if (!int.TryParse(input, out value))
+                    Console.WriteLine("Invalid choices. Please try again.");
                 else
                 {
-                    isValidChoice = true;
+                    choiceIdx = int.Parse(input);
+                    if (choiceIdx < 0 || choiceIdx >= choiceKeys.Length)
+                    {
+                        Console.WriteLine("Invalid choices. Please try again.");
+                    }
+                    else
+                    {
+                        isValidChoice = true;
+                    }
                 }
+                
 
             } while (!isValidChoice);
 
@@ -118,7 +137,19 @@ namespace TechJobsConsole
 
         private static void PrintJobs(List<Dictionary<string, string>> someJobs)
         {
-            Console.WriteLine("printJobs is not implemented yet");
+            
+            foreach (Dictionary<string, string> jobs in someJobs)
+            {
+                Console.WriteLine("\t*****");
+                foreach (KeyValuePair<string, string> job in jobs)
+                {
+                    Console.WriteLine(string.Format("\t{0}: {1}", job.Key, job.Value));
+                }
+                Console.WriteLine("\t*****\n");
+                
+            }
+            Console.ReadKey();
+
         }
     }
 }

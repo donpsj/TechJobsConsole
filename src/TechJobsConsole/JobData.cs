@@ -2,6 +2,7 @@
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Linq;
 
 namespace TechJobsConsole
 {
@@ -25,7 +26,6 @@ namespace TechJobsConsole
             LoadData();
 
             List<string> values = new List<string>();
-
             foreach (Dictionary<string, string> job in AllJobs)
             {
                 string aValue = job[column];
@@ -35,6 +35,7 @@ namespace TechJobsConsole
                     values.Add(aValue);
                 }
             }
+          
             return values;
         }
 
@@ -42,19 +43,39 @@ namespace TechJobsConsole
         {
             // load data, if not already loaded
             LoadData();
-
+            
             List<Dictionary<string, string>> jobs = new List<Dictionary<string, string>>();
-
+            
             foreach (Dictionary<string, string> row in AllJobs)
-            {
-                string aValue = row[column];
-
-                if (aValue.Contains(value))
+            {   string aValue = row[column];
+                if (aValue.ToLower().Contains(value.ToLower()))
                 {
                     jobs.Add(row);
                 }
+                
             }
 
+            return jobs;
+        }
+
+        public static List<Dictionary<string, string>> FindByValue(string searchValue)
+        {
+            // load data, if not already loaded
+            LoadData();
+            List<Dictionary<string, string>> jobs = new List<Dictionary<string, string>>();
+           
+            foreach (Dictionary<string, string> rows in AllJobs)
+            {   
+                foreach (KeyValuePair<string, string> row in rows)
+                {
+                    if (row.Value.ToLower().Contains(searchValue.ToLower()) && !jobs.Contains(rows))
+                    {
+                        jobs.Add(rows);
+                        
+                    }
+                }
+            }
+            
             return jobs;
         }
 
